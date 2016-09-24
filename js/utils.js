@@ -1,7 +1,7 @@
 var $ = document.querySelector.bind(document),
     $$ = document.querySelectorAll.bind(document);
 
-var StarterUtils = {
+var MuteUtils = {
 
     eventAdder: function(selector, eventName, callback) {
         var targets = $$(selector) || [],
