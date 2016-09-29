@@ -68,7 +68,7 @@ var Mute = {
         },
 
         render: function() {
-            switch (muteMode) {
+            switch (this.muteMode) {
                 case 0:
                     this.el.stopButton.classList.remove("active");
                     this.el.muteButton.classList.add("active");
@@ -80,11 +80,11 @@ var Mute = {
             }
 
             if (this.currentDomain && exemptDomains.indexOf(this.currentDomain) > -1) {
-                this.el.excludeOffButton.classList.remove("active");
-                this.el.excludeOnButon.classList.add("active");
+                Mute.el.excludeOffButton.classList.remove("active");
+                Mute.el.excludeOnButton.classList.add("active");
             } else {
-                this.el.excludeOnButton.classList.remove("active");
-                this.el.excludeOffButon.classList.add("active");
+                Mute.el.excludeOnButton.classList.remove("active");
+                Mute.el.excludeOffButton.classList.add("active");
             }
         },
 
@@ -136,7 +136,7 @@ Mute.init = function() {
 
     // read and apply settings
     Mute.f.getSettings();
-    this.setDomainName();
+    Mute.f.setDomainName();
     Mute.f.render();
 
     // transferring communicable data about each site

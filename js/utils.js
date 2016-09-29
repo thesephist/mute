@@ -7,7 +7,7 @@ var MuteUtils = {
         var targets = $$(selector) || [],
             tLength = targets.length;
 
-        for (i = 0; i < tLength; i++) {
+        for (var i = 0; i < tLength; i++) {
             targets[i].addEventListener(eventName, callback);
         }
 

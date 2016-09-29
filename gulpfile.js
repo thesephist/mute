@@ -7,29 +7,26 @@ var gulp = require('gulp'),
 
 var paths = {
     scripts: [
-        'static/js/libs/jquery.js',
-        'static/js/libs/underscore.js',
-        'static/js/libs/backbone.js',
-        'static/js/init.js',
-        'static/js/utils.js',
-        'static/js/config.js',
-        'static/js/models.js',
-        'static/js/views.js',
-        'static/js/main.js'
+        'js/utils.js',
+        'js/main.js'
+    ],
+    injectedScripts: [
+        'js/utils.js',
+        'js/injected.js'
     ],
     styles: [
-        'static/css/main.scss'
+        'css/main.scss'
     ]
 };
 
-gulp.task('default', ['compile-styles', 'compile-scripts']);
+gulp.task('default', ['compile-styles', 'compile-scripts', 'compile-injected']);
 
 gulp.task('compile-styles', function() {
     return gulp.src(paths.styles)
         .pipe(sourcemaps.init())
             .pipe(sass({ outputStyle: 'compressed' }).on('error', sass.logError))
         .pipe(sourcemaps.write())
-        .pipe(gulp.dest('static/css'));
+        .pipe(gulp.dest('css'));
 });
 
 gulp.task('compile-scripts', function() {
@@ -37,7 +34,17 @@ gulp.task('compile-scripts', function() {
         .pipe(sourcemaps.init())
             .pipe(babel({ presets: ['es2015'] }))
             .pipe(uglify().on('error', function(err){throw err;}))
-            .pipe(concat('static/js/main.min.js'))
+            .pipe(concat('js/main.min.js'))
+        .pipe(sourcemaps.write())
+        .pipe(gulp.dest('./'));
+});
+
+gulp.task('compile-injected', function() {
+    return gulp.src(paths.injectedScripts)
+        .pipe(sourcemaps.init())
+            .pipe(babel({ presets: ['es2015'] }))
+            .pipe(uglify().on('error', function(err){throw err;}))
+            .pipe(concat('js/injected.min.js'))
         .pipe(sourcemaps.write())
         .pipe(gulp.dest('./'));
 });
