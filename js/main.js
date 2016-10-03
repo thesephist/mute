@@ -89,14 +89,12 @@ var Mute = {
         },
 
         getSettings: function() {
-            // return settings
             chrome.storage.sync.get({
-                // keys and default values
-                muteMode: this.muteMode,
-                exemptDomains: this.exemptDomains
-            }, function(record){
+                muteMode: 0,
+                exemptDomains: []
+            }, record => {
                 this.muteMode = record.muteMode;
-                this.exemptDomains = record.muteMode;
+                this.exemptDomains = record.exemptDomains;
             });
 
             return {
@@ -106,7 +104,6 @@ var Mute = {
         },
 
         setSettings: function() {
-
           chrome.storage.sync.set({
               muteMode: this.muteMode,
               exemptDomains: this.exemptDomains
@@ -116,8 +113,12 @@ var Mute = {
         },
 
         sendMessage: function(message) {
-            // send mssage to injected.js
-            chrome.runtime.sendMessage(this.getSettings());
+            chrome.tabs.query({
+                active: true,
+                currentWindow: true
+            }, tabs => {
+                chrome.tabs.sendMessage(tabs[0].id, this.getSettings());
+            });
         }
     }
 

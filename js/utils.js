@@ -37,7 +37,7 @@ var MuteUtils = {
 
     },
 
-    noteListToArray: function(nodeList) {
+    nodeListToArray: function(nodeList) {
         return Array.prototype.slice.call(nodeList);
     }
 
