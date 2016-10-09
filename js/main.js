@@ -16,19 +16,28 @@ var Mute = {
 
     // events
     ev: {
-        "excludeOnButton click": "excludeSite",
-        "excludeOffButton click": "includeSite",
-        "muteButton click": "setMute",
-        "stopButton click": "setStop"
+        "click .excluder .on": "excludeSite",
+        "click .excluder .off": "includeSite",
+        "click .muter .mute": "setMute",
+        "click .muter .stop": "setStop"
     },
 
     // functions
     f: {
         setDomainName: function(callback) {
             // get window domain name
-            var self = this;
-            chrome.tabs.query({"active": true, "lastFocusedWindow": true}, function(tabs) {
-                self.currentDomain = tabs[0].url.match(/^(?:https?:\/\/)?(?:[^@\/\n]+@)?(?:www\.)?([^:\/\n]+)/)[0];
+            let url;
+            chrome.tabs.query({
+                "active": true,
+                "lastFocusedWindow": true
+            }, tabs => {
+                url = tabs[0].url;
+
+                let a = document.createElement('a');
+                a.setAttribute('href', url);
+                Mute.currentDomain = a.hostname;
+
+                if (callback) callback();
             });
         },
 
@@ -37,49 +46,49 @@ var Mute = {
         },
 
         excludeSite: function(evt) {
-            if (this.currentDomain && exemptDomains.indexOf(this.currentDomain) == -1) this.exemptDomains.push(this.currentdomain);
+            if (Mute.currentDomain && Mute.exemptDomains.indexOf(Mute.currentDomain) == -1) Mute.exemptDomains.push(Mute.currentDomain);
 
             this.setSettings();
             this.render();
         },
 
         includeSite: function(evt) {
-            if (!this.currentDomain) return;
+            if (!Mute.currentDomain) return;
 
-            var index = exemptDomains.indexOf(this.currentDomain);
-            if (index > -1) this.exemptDomains.split(index, 1);
+            var index = Mute.exemptDomains.indexOf(Mute.currentDomain);
+            if (index > -1) Mute.exemptDomains.splice(index, 1);
 
             this.setSettings();
             this.render();
         },
 
         setMute: function(evt) {
-            this.muteMode = 0;
+            Mute.muteMode = 0;
 
             this.setSettings();
             this.render();
         },
 
         setStop: function(evt) {
-            this.muteMode = 1;
+            Mute.muteMode = 1;
 
             this.setSettings();
             this.render();
         },
 
         render: function() {
-            switch (this.muteMode) {
+            switch (Mute.muteMode) {
                 case 0:
-                    this.el.stopButton.classList.remove("active");
-                    this.el.muteButton.classList.add("active");
+                    Mute.el.stopButton.classList.remove("active");
+                    Mute.el.muteButton.classList.add("active");
                     break;
                 case 1:
-                    this.el.muteButton.classList.remove("active");
-                    this.el.stopButton.classList.add("active");
+                    Mute.el.muteButton.classList.remove("active");
+                    Mute.el.stopButton.classList.add("active");
                     break;
             }
 
-            if (this.currentDomain && exemptDomains.indexOf(this.currentDomain) > -1) {
+            if (Mute.currentDomain && Mute.exemptDomains.indexOf(Mute.currentDomain) > -1) {
                 Mute.el.excludeOffButton.classList.remove("active");
                 Mute.el.excludeOnButton.classList.add("active");
             } else {
@@ -88,28 +97,34 @@ var Mute = {
             }
         },
 
-        getSettings: function() {
+        getSettings: function(callback) {
             chrome.storage.sync.get({
                 muteMode: 0,
                 exemptDomains: []
             }, record => {
-                this.muteMode = record.muteMode;
-                this.exemptDomains = record.exemptDomains;
+                Mute.muteMode = record.muteMode;
+                Mute.exemptDomains = record.exemptDomains;
             });
 
+            if (callback) callback();
+
             return {
-                muteMode: this.muteMode,
-                exemptDomains: this.exemptDomains
+                muteMode: Mute.muteMode,
+                exemptDomains: Mute.exemptDomains
             };
         },
 
-        setSettings: function() {
+        setSettings: function(callback) {
           chrome.storage.sync.set({
-              muteMode: this.muteMode,
-              exemptDomains: this.exemptDomains
+              muteMode: Mute.muteMode,
+              exemptDomains: Mute.exemptDomains
           }, function(){
               this.toast("Saved!")
-          });
+          }.bind(this));
+
+          if (callback) callback();
+
+          console.log(Mute.muteMode, Mute.exemptDomains);
         },
 
         sendMessage: function(message) {
@@ -130,7 +145,7 @@ Mute.init = function() {
     Object.keys(Mute.ev).forEach(function(identifier) {
         var eventName = identifier.split(" ")[0],
             selector = identifier.split(" ").splice(1).join(" "),
-            fn = Mute.f[Mute.ev[identifier]];
+            fn = Mute.f[Mute.ev[identifier]].bind(Mute.f);
 
         MuteUtils.eventAdder(selector, eventName, fn);
     });
