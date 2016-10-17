@@ -19,7 +19,7 @@ var paths = {
     ]
 };
 
-gulp.task('default', ['compile-styles', 'compile-scripts', 'compile-injected']);
+gulp.task('default');
 
 gulp.task('compile-styles', function() {
     return gulp.src(paths.styles)
@@ -49,6 +49,4 @@ gulp.task('compile-injected', function() {
         .pipe(gulp.dest('./'));
 });
 
-gulp.task('build', function() {
-    // do build stuff
-});
+gulp.task('build', ['compile-styles', 'compile-scripts', 'compile-injected']);
