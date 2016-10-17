@@ -1,13 +1,20 @@
 var MuteVideos = MuteUtils.nodeListToArray($$("video[autoplay]"));
 
 function muteVideoElement(el) {
-    // mute stuff
-    console.log('Muting elements!');
+    // mute element
+    el.volume = 0;
+    setTimeout(el => {
+        el.volume = 0;
+    }, 500);
 }
 
 function stopVideoElement(el) {
     // stop video element
-    console.log('Stopping elements!');
+    muteVideoElement(el);
+    setTimeout(el => {
+        el.stop();
+        el.volume = 1;
+    }, 500);
 }
 
 // await message from main thread of popup
