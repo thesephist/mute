@@ -4,11 +4,14 @@ function getMuteVideos() {
 
 function muteVideoElement(el) {
     el.volume = 0;
+    el.muted = true;
     setTimeout(() => {
         el.volume = 0;
+        el.muted = true;
     }, 500);
     setTimeout(() => {
         el.volume = 0;
+        el.muted = true;
     }, 1000);
 }
 
@@ -22,7 +25,6 @@ function stopVideoElement(el) {
 
 function settingsToActions(options) {
     if (options.willRun > -1) return;
-
     getMuteVideos().forEach(el => {
         switch (options.muteMode) {
             case 0:
@@ -66,6 +68,9 @@ function processDOM(request, sender, response) {
 
 // wait for DOM to be parsed
 document.addEventListener('DOMContentLoaded', processDOM);
+window.addEventListener('load', () => {
+    setTimeout(processDOM, 1000);
+});
 
 // await message from main thread of popup
 chrome.runtime.onMessage.addListener(processDOM);
