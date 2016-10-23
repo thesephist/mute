@@ -1,33 +1,71 @@
-var MuteVideos = MuteUtils.nodeListToArray($$("video[autoplay]"));
+function getMuteVideos() {
+    return MuteUtils.nodeListToArray($$("video"));
+}
 
 function muteVideoElement(el) {
-    // mute element
     el.volume = 0;
-    setTimeout(el => {
+    setTimeout(() => {
         el.volume = 0;
     }, 500);
+    setTimeout(() => {
+        el.volume = 0;
+    }, 1000);
 }
 
 function stopVideoElement(el) {
-    // stop video element
     muteVideoElement(el);
-    setTimeout(el => {
-        el.stop();
+    setTimeout(() => {
+        el.pause();
         el.volume = 1;
     }, 500);
 }
 
-// await message from main thread of popup
-chrome.runtime.onMessage.addListener((request, sender, response) => {
-    // parse the message to see if 1) mute and 2) apply
-    var willRun = request.exemptDomains instanceof Array && request.exemptDomains.indexOf(document.domain),
-        muteMode = request.muteMode; // not just mute
+function settingsToActions(options) {
+    if (options.willRun > -1) return;
 
-    console.log(willRun, muteMode);
-
-    if (willRun > -1) return;
-
-    MuteVideos.forEach(el => {
-        muteMode == 0 ? muteVideoElement(el) : stopVideoElement(el);
+    getMuteVideos().forEach(el => {
+        switch (options.muteMode) {
+            case 0:
+                muteVideoElement(el);
+                break;
+            case 1:
+                stopVideoElement(el);
+                break;
+        }
     });
-});
+}
+
+function processDOM(request, sender, response) {
+    let willRun;
+    let muteMode;
+
+    if (request !== undefined && sender !== undefined && response !== undefined) {
+        willRun = request.exemptDomains instanceof Array && request.exemptDomains.indexOf(document.domain);
+        muteMode = request.muteMode;
+
+        settingsToActions({
+            willRun: willRun,
+            muteMode: muteMode
+        });
+    } else {
+        chrome.storage.sync.get({
+            muteMode: 0,
+            exemptDomains: []
+        }, record => {
+            willRun = record.exemptDomains instanceof Array && record.exemptDomains.indexOf(document.domain);
+            muteMode = record.muteMode;
+
+            settingsToActions({
+                willRun: willRun,
+                muteMode: muteMode
+            });
+      });
+    }
+
+}
+
+// wait for DOM to be parsed
+document.addEventListener('DOMContentLoaded', processDOM);
+
+// await message from main thread of popup
+chrome.runtime.onMessage.addListener(processDOM);

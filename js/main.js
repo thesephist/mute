@@ -104,9 +104,9 @@ var Mute = {
             }, record => {
                 Mute.muteMode = record.muteMode;
                 Mute.exemptDomains = record.exemptDomains;
-            });
 
-            if (callback) callback();
+                if (callback) callback();
+            });
 
             return {
                 muteMode: Mute.muteMode,
@@ -124,7 +124,8 @@ var Mute = {
 
           if (callback) callback();
 
-          console.log(Mute.muteMode, Mute.exemptDomains);
+          // transferring communicable data about each site
+          Mute.f.sendMessage();
         },
 
         sendMessage: function(message) {
@@ -150,13 +151,11 @@ Mute.init = function() {
         MuteUtils.eventAdder(selector, eventName, fn);
     });
 
-    // read and apply settings
-    Mute.f.getSettings();
-    Mute.f.setDomainName();
-    Mute.f.render();
+    // read and apply settings -- render is being weird
+    Mute.f.getSettings(Mute.f.render.bind(Mute.f));
+    setTimeout(Mute.f.render.bind(Mute.f), 10);
 
-    // transferring communicable data about each site
-    Mute.f.sendMessage();
+    Mute.f.setDomainName();
 
     console.info("Mute initialized");
 
